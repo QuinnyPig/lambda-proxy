@@ -1,0 +1,41 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  proxy-lambda
+
+  Sample SAM Template for proxy-lambda
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Timeout: 3
+
+Resources:
+  ProxyFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      Environment:
+        Variables:
+          KEY: <INSERT EPHEMERAL KEY HERE> 
+      CodeUri: proxy/
+      Handler: app.lambda_handler
+      Runtime: python3.8
+      Layers:
+        - !Ref TailscaleLayer
+  TailscaleLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+        CompatibleRuntimes: [ python3.8 ]
+        ContentUri: s3://tailscale-layers-us-west-2/tailscale/aed22fd0d76e15988743d4c0626c5bd0
+        LayerName: tailscale
+
+Outputs:
+  # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
+  # Find out more about other implicit resources you can reference within SAM
+  # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
+  ProxyFunction:
+    Description: "Proxy Lambda Function ARN"
+    Value: !GetAtt ProxyFunction.Arn
+  ProxyFunctionIamRole:
+    Description: "Implicit IAM Role created for Proxy function"
+    Value: !GetAtt ProxyFunctionRole.Arn
